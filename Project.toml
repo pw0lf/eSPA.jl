@@ -1,0 +1,4 @@
+name = "eSPA"
+uuid = "ebe14886-0831-425d-b29c-5deaf8b08799"
+authors = ["philippwolf <pwolf01@students.uni-mainz.de>"]
+version = "0.1.0"
