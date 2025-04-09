@@ -1,4 +1,4 @@
-using Example
+using eSPA
 using Documenter
 
 DocMeta.setdocmeta!(eSPA, :DocTestSetup, :(using eSPA); recursive=true)

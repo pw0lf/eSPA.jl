@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = Example
+CurrentModule = eSPA
 ```
 
-# Example
+# eSPA
 
-Documentation for [Example](https://github.com/pwolf/Example.jl).
+Documentation for [eSPA](https://github.com/pw0lf/eSPA.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [Example]
+Modules = [eSPA]
 ```
