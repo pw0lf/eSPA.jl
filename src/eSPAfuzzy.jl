@@ -1,3 +1,15 @@
+"""
+    eSPAfuzzy(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
+
+Fuzzy version of eSPA [Horenko2020]
+
+# Fields
+- `K::Int`: Number of Clusters
+- `eps_CL::Float64`: Hyperparameter for the classifyer loss
+- `eps_E::Float64`: Hyperparameter for the feature selection loss
+- `tol::Float64`: Break-condition for optimizaiton
+
+"""
 mutable struct eSPAfuzzy
     # Hyperparameters
     K::Int
@@ -40,6 +52,16 @@ function eSPAfuzzy(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
     return eSPAfuzzy(K, eps_CL, eps_E, tol, gamma, W, S, lambda, Pi, D, T, M)
 end
 
+"""
+    fit!(model::eSPAfuzzy, X::AbstractMatrix, y::AbstractVector)
+
+Train eSPAfuzzy with Data.
+
+# Arguments:
+- `model::eSPAfuzzy`: Model instance to train.
+- `X::AbstractMatrix`: Data matrix which includes the features. Rows contain the features, Columns the data point.
+- `y::AbstractVector`: Data labels. The labels should be Integers between 1 and M.
+"""
 function fit!(model::eSPAfuzzy, X::AbstractMatrix, y::AbstractVector)
     model.D, model.T = size(X)
     T_y = size(y)[1]
@@ -91,6 +113,15 @@ function fit!(model::eSPAfuzzy, X::AbstractMatrix, y::AbstractVector)
     end
 end
 
+"""
+    predict(model::eSPAfuzzy, X::AbstractMatrix)
+
+Calculate predictions.
+
+# Arguments:
+- `model::eSPAfuzzy`: Trained instance of eSPAfuzzy.
+- `X::AbstractMatrix`: Data matrix which includes the features. Rows contain the features, Columns the data point.
+"""
 function predict(model::eSPAfuzzy, X::AbstractMatrix)
     D, T = size(X)
     if model.D != D

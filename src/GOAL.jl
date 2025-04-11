@@ -1,3 +1,15 @@
+"""
+    GOAL(K::Int, eps_CL::Float64, G::Int, tol::Float64)
+
+Implementation of GOAL [Vecchi+2024]
+
+# Fields
+- `K::Int`: Number of Clusters
+- `eps_CL::Float64`: Hyperparameter for the classifyer loss
+- `G::Int`: Dimension of Gauge
+- `tol::Float64`: Break-condition for optimizaiton
+
+"""
 mutable struct GOAL
     # Hyperparameters
     K::Int
@@ -37,7 +49,16 @@ function GOAL(K::Int, eps_CL::Float64, G::Int, tol::Float64)
     return GOAL(K, eps_CL, G, tol, gamma, R, S, lambda, Pi, D, T, M)
 end
 
-#TODO: Implement steps
+"""
+    fit!(model::GOAL, X::AbstractMatrix, y::AbstractVector)
+
+Train GOAL with Data.
+
+# Arguments:
+- `model::GOAL`: Model instance to train.
+- `X::AbstractMatrix`: Data matrix which includes the features. Rows contain the features, Columns the data point.
+- `y::AbstractVector`: Data labels. The labels should be Integers between 1 and M.
+"""
 function fit!(model::GOAL, X::AbstractMatrix, y::AbstractVector)
     model.D, model.T = size(X)
     T_y = size(y)[1]
@@ -88,6 +109,15 @@ function fit!(model::GOAL, X::AbstractMatrix, y::AbstractVector)
     return clusters
 end
 
+"""
+    predict(model::GOAL, X::AbstractMatrix)
+
+Calculate predictions.
+
+# Arguments:
+- `model::GOAL`: Trained instance of GOAL.
+- `X::AbstractMatrix`: Data matrix which includes the features. Rows contain the features, Columns the data point.
+"""
 function predict(model::GOAL, X::AbstractMatrix)
     D, T = size(X)
     if model.D != D

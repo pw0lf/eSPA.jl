@@ -1,3 +1,16 @@
+"""
+    eSPA.jl
+
+Implementations of eSPA, eSPA+ and GOAl.
+
+# Exports:
+- `eSPAdiscrete`
+- `eSPAfuzzy`
+- `eSPAplus`
+- `GOAL`
+- `fit!`
+- `predict`
+"""
 module eSPA
 
 include("utils.jl")

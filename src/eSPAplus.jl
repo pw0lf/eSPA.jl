@@ -1,3 +1,15 @@
+"""
+    eSPAplus(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
+
+Implementation of eSPA+ [Vecchi+2022]
+
+# Fields
+- `K::Int`: Number of Clusters
+- `eps_CL::Float64`: Hyperparameter for the classifyer loss
+- `eps_E::Float64`: Hyperparameter for the feature selection loss
+- `tol::Float64`: Break-condition for optimizaiton
+
+"""
 mutable struct eSPAplus
     # Hyperparameters
     K::Int
@@ -40,6 +52,16 @@ function eSPAplus(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
     return eSPAplus(K, eps_CL, eps_E, tol, gamma, W, S, lambda, Pi, D, T, M)
 end
 
+"""
+    fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
+
+Train eSPAplus with Data.
+
+# Arguments:
+- `model::eSPAplus`: Model instance to train.
+- `X::AbstractMatrix`: Data matrix which includes the features. Rows contain the features, Columns the data point.
+- `y::AbstractVector`: Data labels. The labels should be Integers between 1 and M.
+"""
 function fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
     model.D, model.T = size(X)
     T_y = size(y)[1]
@@ -94,6 +116,15 @@ function fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
     return clusters
 end
 
+"""
+    predict(model::eSPAplus, X::AbstractMatrix)
+
+Calculate predictions.
+
+# Arguments:
+- `model::eSPAplus`: Trained instance of eSPAplus.
+- `X::AbstractMatrix`: Data matrix which includes the features. Rows contain the features, Columns the data point.
+"""
 function predict(model::eSPAplus, X::AbstractMatrix)
     D, T = size(X)
     if model.D != D
