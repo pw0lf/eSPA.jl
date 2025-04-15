@@ -109,7 +109,47 @@ end
 
 @testset "fuzzy steps" begin end
 
-@testset "GOAL steps" begin end
+@testset "GOAL steps" begin 
+    @testset "sstep" begin
+        D = 5
+        T = 10
+        K = 5
+        G = 5
+        R = Matrix(1.0I, G, G)
+        X = zeros(5, 10)
+        for t in 1:T
+            X[:, t] = t*ones(D)
+        end
+        gamma = hcat(Matrix(1.0I, D, D), Matrix(1.0I, D, D)[end:-1:1, :])
+        S = zeros(D, K)
+        sstep_goal!(X, K, gamma, S, R, D)
+        @test sum(S .!= 11/2) == 0
+    end
+
+    @testset "gammastep" begin
+        T = 8
+        D = 2
+        K = 2
+        M = 2
+        X = [-0.5 -1.5 -1. -1. 0.5 1.5 1. 1.; 0 0 0.5 -0.5 0 0 0.5 -0.5]
+        S = [-1 1; 0 0]
+        Pi = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
+        lambda = [1 0; 0 1]
+        G = 2
+        R = Matrix(1.0I, G, G)
+        eps_CL = 1.
+        tol = 0.001
+        gamma = zeros(K,T)
+        gammastep_goal!(X, K, eps_CL, tol, gamma, S, R, Pi, lambda, T, M)
+        gamma_true = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
+        @test gamma == gamma_true
+    end
+
+    @testset "rstep" begin
+
+        #rstep_goal!(X, G, gamma, S, R, D)
+    end
+end
 
 @testset "discrete steps" begin
     @testset "sstep" begin
@@ -137,7 +177,23 @@ end
         @test lambda ≈ Matrix(1.0I, 3, 3) atol=0.01
     end
 
-    @testset "gammastep" begin end
+    @testset "gammastep" begin 
+        T = 8
+        D = 2
+        K = 2
+        M = 2
+        X = [-0.5 -1.5 -1. -1. 0.5 1.5 1. 1.; 0 0 0.5 -0.5 0 0 0.5 -0.5]
+        S = [-1 1; 0 0]
+        Pi = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
+        lambda = [1 0; 0 1]
+        W = [0.5, 0.5]
+        eps_CL = 1.
+        tol = 0.001
+        gamma = zeros(K,T)
+        gammastep_discrete!(X, K, eps_CL, tol, gamma, W, S, lambda, Pi, T, M)
+        gamma_true = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
+        @test gamma == gamma_true
+    end
 
     @testset "wstep" begin
         D = 10
@@ -157,6 +213,60 @@ end
     end
 end
 
-@testset "cluster utils" begin end
+@testset "cluster utils" begin
+    K = 3
+    T = 10
+    gamma = [1 1 1 0 0 0 0 0 0 0; 0 0 0 1 1 1 1 0 0 0; 0 0 0 0 0 0 0 1 1 1]
+    @test check_clustersizes(K, gamma, T) == [3,4,3]
 
-@testset "predictions" begin end
+    no_empty_cluster!(K, gamma, T)
+    @test check_clustersizes(K, gamma, T) == [3,4,3]
+
+    gamma = [1 1 1 1 1 1 1 0 0 0; 0 0 0 0 0 0 0 1 1 1; 0 0 0 0 0 0 0 0 0 0]
+    split_cluster!(gamma, 3, 1)
+    @test check_clustersizes(K, gamma, T) == [4,3,3]
+
+    gamma = [1 1 1 1 1 1 1 0 0 0; 0 0 0 0 0 0 0 1 1 1; 0 0 0 0 0 0 0 0 0 0]
+    no_empty_cluster!(K, gamma, T)
+    @test check_clustersizes(K, gamma, T) == [4,3,3]
+end
+
+@testset "predictions" begin 
+    @testset "discrete" begin
+        T = 8
+        D = 2
+        K = 2
+        M = 2
+        X = [-0.5 -1.5 -1. -1. 0.5 1.5 1. 1.; 0 0 0.5 -0.5 0 0 0.5 -0.5]
+        S = [-1 1; 0 0]
+        lambda = [1 0; 0 1]
+        W = [0.5, 0.5]
+        gamma = zeros(K,T)
+
+        prediction_gamma_discrete!(gamma, X, W, S, K, T)
+
+        gamma_true = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
+        @test gamma == gamma_true
+    end
+
+    @testset "goal" begin
+        T = 8
+        D = 2
+        K = 2
+        M = 2
+        X = [-0.5 -1.5 -1. -1. 0.5 1.5 1. 1.; 0 0 0.5 -0.5 0 0 0.5 -0.5]
+        S = [-1 1; 0 0]
+        Pi = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
+        lambda = [1 0; 0 1]
+        G = 2
+        R = Matrix(1.0I, G, G)
+        gamma = zeros(K,T)
+        prediction_gamma_GOAL!(gamma, X, R, S, K, T)
+        gamma_true = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
+        @test gamma == gamma_true
+    end
+
+    @testset "fuzzy" begin
+        
+    end
+end
