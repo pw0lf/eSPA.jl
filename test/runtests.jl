@@ -146,8 +146,22 @@ end
     end
 
     @testset "rstep" begin
+        T = 6
+        D = 3
+        G = 2
+        X = [1 1 1 0 0 0; 0 0 0 -1 -1 -1; 0 0 0 0 0 0]
+        gamma = [1 1 1 0 0 0; 0 0 0 1 1 1]
+        S = [1 -1; 1 0]
+        R = zeros(D,G)
 
-        #rstep_goal!(X, G, gamma, S, R, D)
+        rstep_goal!(X, G, gamma, S, R, D)
+
+        R_true = [1 0; 0 -1; 0 0]
+        for d in 1:D, g in 1:G
+
+            @test R[d,g] .≈ R_true[d,g] atol = 0.01
+        end
+
     end
 end
 

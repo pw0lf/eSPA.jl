@@ -20,7 +20,7 @@ function initialize_plus!(X, K, W, S, lambda, D, T, M)
 
     S[:, :] = X[:, rand(1:T, K)]
 
-    lambda[:, :] = rand(K, M)
+    lambda[:, :] = rand(M,K)
     for m in 1:M
         lambda[:, m] = normalize!(lambda[:, m], 1)
     end
@@ -70,7 +70,9 @@ function losseSPA(X, eps_E, eps_CL, gamma, W, S, lambda, Pi, D, T, M)
             tmp2 = sum(lambda[m, :] .* gamma[:, t])
             if tmp2 != 0.0
                 loss3 += Pi[m, t] * log(tmp2) #TODO: Fixed the -Inf problem by if-clause, but it this right?
-            end                              # -Inf Problem: the Prob for a data sample to be labeled m is 0
+            else                              # -Inf Problem: the Prob for a data sample to be labeled m is 0
+                loss3 += -100
+            end
         end
     end
     loss3 = eps_CL/(T*M) * loss3
@@ -106,7 +108,7 @@ end
 
 function wstep_fuzzy!(X, eps_E, gamma, W, S, D, T)
     model = Model(Ipopt.Optimizer)
-    set_attribute(model, "print_level", 1)
+    set_optimizer_attribute(model, "print_level", 0)
     @variable(model, w[1:D] >= 0)
 
     function obj_function(w)
@@ -136,6 +138,7 @@ function lambdastep_fuzzy!(K, gamma, lambda, Pi, M, T)
     end
 
     model = Model(Ipopt.Optimizer)
+    set_optimizer_attribute(model, "print_level", 0)
     @variable(model, l[1:M, 1:K] >= 0)
     @objective(model, Min, obj_function(l))
     @constraint(model, [i = 1:K], sum(l[:, i]) == 1)
@@ -155,10 +158,12 @@ function gammastep_fuzzy!(T, M, Pi, lambda, eps_CL, W, X, S, K, gamma)
             return sum(W .* (X[:, t] .- (S * gt))) - val1
         end
         model = Model(Ipopt.Optimizer)
+        set_optimizer_attribute(model, "print_level", 0)
         @variable(model, gt[1:K] >= 0)
         @objective(model, Min, obj_function(gt))
         @constraint(model, sum(gt) == 1)
         optimize!(model)
+        #optimize!(model; quiet=true)
         gamma[:, t] = value.(gt)
     end
 end
@@ -166,8 +171,11 @@ end
 #TODO: test since it's written with chatgpt
 function sstep_fuzzy!(D, W, T, S, gamma, X)
     for d in 1:D
-        Wd = Diagonal(fill(W[d], T))
-        S[d, :] = (gamma * Wd * gamma') \ (gamma * Wd * X[d, :])
+        #Wd = Diagonal(fill(W[d], T))
+        A = sqrt(W[d]) .* gamma'   # T x K
+        b = sqrt(W[d]) .* X[d, :]
+        S[d, :] = (A \ b)'  
+        #S[d, :] = (gamma * Wd * gamma') \ (gamma * Wd * X[d, :])
     end
 end
 
@@ -302,6 +310,7 @@ function prediction_gamma_fuzzy!(gamma, X, W, S, K, T)
             return sum(W .* (X[:, t] .- (S * gt)))
         end
         model = Model(Ipopt.Optimizer)
+        set_optimizer_attribute(model, "print_level", 0)
         @variable(model, gt[1:K] >= 0)
         @objective(model, Min, obj_function(gt))
         @constraint(model, sum(gt) == 1)

@@ -8,6 +8,7 @@ Implementations of eSPA, eSPA+ and GOAl.
 - `eSPAfuzzy`
 - `eSPAplus`
 - `GOAL`
+- `eSPAhybrid`
 - `fit!`
 - `predict`
 """
@@ -18,7 +19,8 @@ include("eSPAdiscrete.jl")
 include("eSPAfuzzy.jl")
 include("eSPAplus.jl")
 include("GOAL.jl")
+include("eSPAhybrid.jl")
 
-export eSPAfuzzy, eSPAdiscrete, eSPAplus, GOAL, fit!, predict
+export eSPAfuzzy, eSPAdiscrete, eSPAplus, GOAL, eSPAhybrid , fit!, predict
 
 end # module eSPA

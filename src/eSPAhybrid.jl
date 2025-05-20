@@ -1,21 +1,21 @@
 """
-    eSPAplus(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
-
-Implementation of eSPA+ [Vecchi+2022]
+    eSPAhybrid(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
 
 # Fields
 - `K::Int`: Number of Clusters
 - `eps_CL::Float64`: Hyperparameter for the classifyer loss
 - `eps_E::Float64`: Hyperparameter for the feature selection loss
-- `tol::Float64`: Break-condition for optimizaiton
+- `tol::Float64`: Break-condition for discrete optimizaiton
+- `num_fuzzy_steps::Int`: NUmber of fuzzy steps after discrete steps are finished
 
 """
-mutable struct eSPAplus
+mutable struct eSPAhybrid
     # Hyperparameters
     K::Int
     eps_CL::Float64
     eps_E::Float64
     tol::Float64
+    num_fuzzy_steps::Int
 
     # Parameters
     gamma::AbstractMatrix
@@ -30,7 +30,7 @@ mutable struct eSPAplus
     M::Int
 end
 
-function eSPAplus(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
+function eSPAhybrid(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64,num_fuzzy_steps::Int)
     if eps_CL < 0.0
         throw(ArgumentError("eps_CL must be non-negative"))
     end
@@ -49,20 +49,20 @@ function eSPAplus(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
     D = 0
     T = 0
     M = 0
-    return eSPAplus(K, eps_CL, eps_E, tol, gamma, W, S, lambda, Pi, D, T, M)
+    return eSPAhybrid(K, eps_CL, eps_E, tol, num_fuzzy_steps, gamma, W, S, lambda, Pi, D, T, M)
 end
 
 """
-    fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
+    fit!(model::eSPAhybrid, X::AbstractMatrix, y::AbstractVector)
 
-Train eSPAplus with Data.
+Train eSPAhybrid with Data.
 
 # Arguments:
-- `model::eSPAplus`: Model instance to train.
+- `model::eSPAhybrid`: Model instance to train.
 - `X::AbstractMatrix`: Data matrix which includes the features. Rows contain the features, Columns the data point.
 - `y::AbstractVector`: Data labels. The labels should be Integers between 1 and M.
 """
-function fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
+function fit!(model::eSPAhybrid, X::AbstractMatrix, y::AbstractVector)
     model.D, model.T = size(X)
     T_y = size(y)[1]
 
@@ -92,10 +92,11 @@ function fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
 
     clusters = []
     push!(clusters, copy(model.S))
-    while L_delta > model.tol
+    println("Starting discrete phase")
+    while L_delta > model.tol 
         gammastep_discrete!(X, model.K, model.eps_CL, model.tol, model.gamma, model.W,
-                            model.S, model.lambda, model.Pi, model.T, model.M)
-        no_empty_cluster!(model.K, model.gamma, model.T)
+                            model.S, model.lambda, model.Pi, model.T, model.M) 
+        no_empty_cluster!(model.K, model.gamma, model.T)      
         wstep_discrete!(X, model.eps_E, model.gamma, model.W, model.S, model.D, model.T)
         sstep_discrete!(X, model.K, model.gamma, model.S, model.D)
         lambdastep_discrete!(model.K, model.gamma, model.lambda, model.Pi, model.M)
@@ -112,25 +113,50 @@ function fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
         i += 1
         push!(clusters, copy(model.S))
     end
+    if model.num_fuzzy_steps <= 0
+        return clusters
+    end
+    println("Starting fuzzy phase")
+    for fuzzy_step in 1:model.num_fuzzy_steps
+        #TODO: Change
+        #no_empty_cluster!(model.K,model.gamma,model.T) #TODO: Check if this is needed
+        sstep_fuzzy!(model.D, model.W, model.T, model.S, model.gamma, X)
+        lambdastep_fuzzy!(model.K, model.gamma, model.lambda, model.Pi, model.M, model.T)
+        gammastep_fuzzy!(model.T, model.M, model.Pi, model.lambda, model.eps_CL, model.W, X,
+                         model.S, model.K, model.gamma)
+        wstep_fuzzy!(X, model.eps_E, model.gamma, model.W, model.S, model.D, model.T)
+        L1, L2,
+        L3 = losseSPA(X, model.eps_E, model.eps_CL, model.gamma, model.W, model.S,
+                      model.lambda, model.Pi, model.D, model.T, model.M)
+        L_new = L1 + L2 - L3
+        L_delta = abs(L - L_new)
+        L = L_new
+        println(fuzzy_step, ", Loss: ", L_new, " | $L1, $L2, $(-L3)")
+        push!(clusters, copy(model.S))
+    end
     return clusters
 end
 
 """
-    predict(model::eSPAplus, X::AbstractMatrix)
+    predict(model::eSPAhybrid, X::AbstractMatrix)
 
 Calculate predictions.
 
 # Arguments:
-- `model::eSPAplus`: Trained instance of eSPAplus.
+- `model::eSPAhybrid`: Trained instance of eSPAhybrid.
 - `X::AbstractMatrix`: Data matrix which includes the features. Rows contain the features, Columns the data point.
 """
-function predict(model::eSPAplus, X::AbstractMatrix)
+function predict(model::eSPAhybrid, X::AbstractMatrix)
     D, T = size(X)
     if model.D != D
         throw(ArgumentError("The input samples should have the same dimension D as the Trainingdata. Input = $D, Trainingdata = $(model.D)."))
     end
     gamma = zeros(model.K, T)
-    prediction_gamma_discrete!(gamma, X, model.W, model.S, model.K, T)
+    if model.num_fuzzy_steps <= 0
+        prediction_gamma_discrete!(gamma, X, model.W, model.S, model.K, T)
+    else
+        prediction_gamma_fuzzy!(gamma, X, model.W, model.S, model.K, T)
+    end
     Pi = model.lambda * gamma
     pred = argmax(Pi, dims = 1)
     pred = map(x -> x[1], pred)[1, :]

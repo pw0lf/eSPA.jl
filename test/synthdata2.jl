@@ -3,7 +3,7 @@ using DataFrames
 using LinearAlgebra
 
 function make_synth_data2(n, d)
-    return vcat(first_two_genes(n, [-5, -5], [5, 5], 1.0), other_genes(n, d-2)),
+    return vcat(first_two_genes(n, [-0.5, -0.5], [0.5, 0.5], 0.1), other_genes(n, d-2)),
            make_labels(n)
 end
 

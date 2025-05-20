@@ -9,7 +9,7 @@ Random.seed!(50)
 
 include("synthdata2.jl")
 
-d=8
+d= 20
 n = 13 * d + 2
 n = 1000
 
@@ -21,8 +21,8 @@ X_test = X[:, test_indices]
 y_train = Y[train_indices]
 y_test = Y[test_indices]
 
-#model = eSPAdiscrete(35, 20., 500.0, 0.0001)
-model = GOAL(12, 500.0, 7, 0.1)
+model = eSPAdiscrete(35, 20., 5.0, 0.0001)
+#model = eSPAhybrid(35, 20.0, 5.0, 0.0001, 0)
 clusters = eSPA.fit!(model, X_train, y_train)
 y_pred = eSPA.predict(model, X_test)
 println("Acc: ", accuracy(y_pred, y_test))
