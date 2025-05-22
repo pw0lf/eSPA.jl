@@ -1,3 +1,4 @@
+using DataFrames
 """
     eSPAdiscrete(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
 
@@ -63,6 +64,7 @@ Train eSPAdiscrete with Data.
 - `y::AbstractVector`: Data labels. The labels should be Integers between 1 and M.
 """
 function fit!(model::eSPAdiscrete, X::AbstractMatrix, y::AbstractVector)
+    start_time = time_ns()
     model.D, model.T = size(X)
     T_y = size(y)[1]
 
@@ -91,28 +93,36 @@ function fit!(model::eSPAdiscrete, X::AbstractMatrix, y::AbstractVector)
     L = Inf
     L_delta = Inf
 
-    clusters = []
-    push!(clusters, copy(model.S))
+    opt_times = DataFrame(no_empty_cluster=Int[],sstep=Int[],lambdastep=Int[],gammastep=Int[],wstep=Int[],loss=Int[])
+    start_optimization = time_ns()
     while L_delta > model.tol
+        time_1 = time_ns()
         no_empty_cluster!(model.K, model.gamma, model.T)
+        time_2 = time_ns()
         sstep_discrete!(X, model.K, model.gamma, model.S, model.D)
+        time_3 = time_ns()
         lambdastep_discrete!(model.K, model.gamma, model.lambda, model.Pi, model.M)
+        time_4 = time_ns()
         gammastep_discrete!(X, model.K, model.eps_CL, model.tol, model.gamma, model.W,
                             model.S, model.lambda, model.Pi, model.T, model.M)
+        time_5 = time_ns()
         wstep_fuzzy!(X, model.eps_E, model.gamma, model.W, model.S, model.D, model.T)
+        time_6 = time_ns()
         L1, L2,
         L3 = losseSPA(X, model.eps_E, model.eps_CL, model.gamma, model.W, model.S,
                       model.lambda, model.Pi, model.D, model.T, model.M)
+        time_7 = time_ns()
         L_new = L1 + L2 - L3
         L_delta = abs(L - L_new)
         L = L_new
         println(i, ", Loss: ", L_new, " | $L1, $L2, $(-L3)")
-        #println("delta: $L_delta")
-        #println("W: $(model.W)")
+        
+        timing_results = (;no_empty_cluster=time_2 - time_1,sstep=time_3-time_2,lambdastep=time_4-time_3,gammastep=time_5-time_4,wstep=time_6-time_5,loss=time_7-time_6)
+        push!(opt_times,timing_results)
         i += 1
-        push!(clusters, copy(model.S))
     end
-    return clusters
+    end_time = time_ns()
+    return start_time, start_optimization, end_time, opt_times
 end
 
 """
