@@ -31,7 +31,7 @@ include("../src/utils.jl")
     @testset "init plus" begin
         W = zeros(D)
         S = zeros(D, K)
-        lambda = zeros(K, M)
+        lambda = zeros(M,K)
         initialize_plus!(X, K, W, S, lambda, D, T, M)
 
         # Test if W is positiv and sums up to 1
