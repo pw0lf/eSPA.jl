@@ -1,6 +1,6 @@
 using DataFrames
 """
-    eSPAdiscrete(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
+    eSPAdiscrete(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64, max_iter::Int)
 
 Discrete version of eSPA [Horenko2020]
 
@@ -17,6 +17,7 @@ mutable struct eSPAdiscrete
     eps_CL::Float64
     eps_E::Float64
     tol::Float64
+    max_iter::Int
 
     # Parameters
     gamma::AbstractMatrix
@@ -31,7 +32,7 @@ mutable struct eSPAdiscrete
     M::Int
 end
 
-function eSPAdiscrete(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
+function eSPAdiscrete(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64,max_iter::Int)
     if eps_CL < 0.0
         throw(ArgumentError("eps_CL must be non-negative"))
     end
@@ -50,7 +51,7 @@ function eSPAdiscrete(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64)
     D = 0
     T = 0
     M = 0
-    return eSPAdiscrete(K, eps_CL, eps_E, tol, gamma, W, S, lambda, Pi, D, T, M)
+    return eSPAdiscrete(K, eps_CL, eps_E, tol, max_iter, gamma, W, S, lambda, Pi, D, T, M)
 end
 
 """
@@ -95,7 +96,7 @@ function fit!(model::eSPAdiscrete, X::AbstractMatrix, y::AbstractVector)
 
     opt_times = DataFrame(i=Int[],no_empty_cluster=Int[],sstep=Int[],lambdastep=Int[],gammastep=Int[],wstep=Int[],loss=Int[])
     start_optimization = time_ns()
-    while L_delta > model.tol
+    while (L_delta > model.tol) && (i <= model.max_iter)
         time_1 = time_ns()
         no_empty_cluster!(model.K, model.gamma, model.T)
         time_2 = time_ns()

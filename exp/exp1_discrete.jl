@@ -52,7 +52,7 @@ y_test = Y[test_indices]
 global iteration_counter = 0
 function train_and_eval_model(K,eps_CL,eps_E,tol)
     global iteration_counter += 1
-    model = eSPAdiscrete(K,eps_CL,eps_E,tol)
+    model = eSPAdiscrete(K,eps_CL,eps_E,tol,100)
     start_time, start_optimization, end_time, opt_times = eSPA.fit!(model, X_train, y_train)
     y_pred = eSPA.predict(model, X_test)
     acc = accuracy(y_pred, y_test)
@@ -73,8 +73,8 @@ function train_and_eval_model(K,eps_CL,eps_E,tol)
 end
 ho = @hyperopt for i = iter,
             K = 5:(minimum([200,Int(0.8*n)])),
-            eps_E = exp10.(LinRange(-2,2,1000)),
-            eps_CL = exp10.(LinRange(-2,2,1000)),
+            eps_E = exp10.(LinRange(-2,1,1000)),
+            eps_CL = exp10.(LinRange(-1,2,1000)),
             tol = exp10.(-LinRange(1,10,1000))
     cost = train_and_eval_model(K,eps_CL,eps_E,tol)
 end
