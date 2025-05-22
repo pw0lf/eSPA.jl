@@ -73,8 +73,8 @@ function train_and_eval_model(K,eps_CL,eps_E,tol)
 end
 ho = @hyperopt for i = iter,
             K = 5:(minimum([200,Int(0.8*n)])),
-            eps_E = LinRange(1,500,1000),
-            eps_CL = LinRange(1,500,1000),
+            eps_E = exp10.(LinRange(-2,2,1000)),
+            eps_CL = exp10.(LinRange(-2,2,1000)),
             tol = exp10.(-LinRange(1,10,1000))
     cost = train_and_eval_model(K,eps_CL,eps_E,tol)
 end
