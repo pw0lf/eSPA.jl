@@ -93,7 +93,7 @@ function fit!(model::eSPAdiscrete, X::AbstractMatrix, y::AbstractVector)
     L = Inf
     L_delta = Inf
 
-    opt_times = DataFrame(no_empty_cluster=Int[],sstep=Int[],lambdastep=Int[],gammastep=Int[],wstep=Int[],loss=Int[])
+    opt_times = DataFrame(i=Int[],no_empty_cluster=Int[],sstep=Int[],lambdastep=Int[],gammastep=Int[],wstep=Int[],loss=Int[])
     start_optimization = time_ns()
     while L_delta > model.tol
         time_1 = time_ns()
@@ -117,7 +117,7 @@ function fit!(model::eSPAdiscrete, X::AbstractMatrix, y::AbstractVector)
         L = L_new
         println(i, ", Loss: ", L_new, " | $L1, $L2, $(-L3)")
         
-        timing_results = (;no_empty_cluster=time_2 - time_1,sstep=time_3-time_2,lambdastep=time_4-time_3,gammastep=time_5-time_4,wstep=time_6-time_5,loss=time_7-time_6)
+        timing_results = (;i = i,no_empty_cluster=time_2 - time_1,sstep=time_3-time_2,lambdastep=time_4-time_3,gammastep=time_5-time_4,wstep=time_6-time_5,loss=time_7-time_6)
         push!(opt_times,timing_results)
         i += 1
     end
