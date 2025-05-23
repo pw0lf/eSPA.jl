@@ -9,6 +9,7 @@ Discrete version of eSPA [Horenko2020]
 - `eps_CL::Float64`: Hyperparameter for the classifyer loss
 - `eps_E::Float64`: Hyperparameter for the feature selection loss
 - `tol::Float64`: Break-condition for optimizaiton
+- `max_iter::Int`: Maximum number of optimization iterations
 
 """
 mutable struct eSPAdiscrete

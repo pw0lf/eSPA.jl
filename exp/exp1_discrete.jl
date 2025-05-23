@@ -72,7 +72,7 @@ function train_and_eval_model(K,eps_CL,eps_E,tol)
     return acc
 end
 ho = @hyperopt for i = iter,
-            K = 5:(minimum([200,Int(0.8*n)])),
+            K = 5:(minimum([100,Int(0.8*n)])),
             eps_E = exp10.(LinRange(-2,1,1000)),
             eps_CL = exp10.(LinRange(-1,2,1000)),
             tol = exp10.(-LinRange(1,10,1000))
