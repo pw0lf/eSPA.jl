@@ -50,9 +50,9 @@ X_test = X[:, test_indices]
 y_train = Y[train_indices]
 y_test = Y[test_indices]
 global iteration_counter = 0
-function train_and_eval_model(K,eps_CL,eps_E,tol)
+function train_and_eval_model(K,eps_CL,G,tol)
     global iteration_counter += 1
-    model = GOAL(K,eps_CL,eps_E,tol,100)
+    model = GOAL(K,eps_CL,G,tol,100)
     start_time, start_optimization, end_time, opt_times = eSPA.fit!(model, X_train, y_train)
     y_pred = eSPA.predict(model, X_test)
     acc = accuracy(y_pred, y_test)
@@ -61,7 +61,7 @@ function train_and_eval_model(K,eps_CL,eps_E,tol)
         "complete_time" => (end_time-start_time)/1e9,
         "opt_time" => (end_time-start_optimization)/1e9,
         "accuracy" => acc,
-        "hps" => Dict("K" => K, "eps_CL" => eps_CL,"eps_E" => eps_E, "tol" => tol)
+        "hps" => Dict("K" => K, "eps_CL" => eps_CL,"G" => G, "tol" => tol)
         )
     json_file = joinpath(experiment_dir, "params_$(iteration_counter).json")
     open(json_file, "w") do io
@@ -76,7 +76,7 @@ ho = @hyperopt for i = iter,
             G = 1:(d-1),
             eps_CL = exp10.(LinRange(-1,2,1000)),
             tol = exp10.(-LinRange(1,10,1000))
-    cost = train_and_eval_model(K,eps_CL,eps_E,tol)
+    cost = train_and_eval_model(K,eps_CL,G,tol)
 end
 
 hp_tune_results = Dict(

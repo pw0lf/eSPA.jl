@@ -92,7 +92,7 @@ function fit!(model::GOAL, X::AbstractMatrix, y::AbstractVector)
 
     opt_times = DataFrame(i=Int[],no_empty_cluster=Int[],sstep=Int[],lambdastep=Int[],gammastep=Int[],rstep=Int[],loss=Int[])
     start_optimization = time_ns()    
-    while L_delta > model.tol && i <= max_iter
+    while L_delta > model.tol && i <= model.max_iter
         time_1 = time_ns()
         sstep_goal!(X, model.K, model.gamma, model.S, model.R, model.D)
         time_2 = time_ns()
