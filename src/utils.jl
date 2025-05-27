@@ -49,6 +49,7 @@ end
 ######## loss functions ########
 
 function losseSPA(X, eps_E, eps_CL, gamma, W, S, lambda, Pi, D, T, M)
+    W[W .<= 0] .= eps(eltype(W)) # Bugfix. Sometimes a dimension gets assigned weight of 0.0
     loss1 = eps_E/D * sum(W[:] .* log.(W[:]))
     #println("loss1 ",loss1)
 
