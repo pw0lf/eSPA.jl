@@ -27,6 +27,7 @@ include("../test/synthdata2.jl")
 
 args = parse_commandline()
 iter = args["iter"]
+d = 450
 
 
 timestamp = Dates.format(now(), "yyyy-mm-dd_HH-MM-SS")
