@@ -52,7 +52,7 @@ global iteration_counter = 0
 function train_and_eval_model(K,eps_CL,eps_E,tol,num_fuzzy_steps)
     global iteration_counter += 1
     model = eSPAhybrid(K,eps_CL,eps_E,tol,100,num_fuzzy_steps)
-    start_time, start_optimization, end_time, opt_times = eSPA.fit!(model, X_train, y_train)
+    start_time, start_optimization, start_fuzzy, end_time, opt_times_discr, opt_times_fuzzy = eSPA.fit!(model, X_train, y_train)
     y_pred = eSPA.predict(model, X_test)
     acc = accuracy(y_pred, y_test)
     #Track data
@@ -67,7 +67,10 @@ function train_and_eval_model(K,eps_CL,eps_E,tol,num_fuzzy_steps)
         JSON.print(io, params)
     end
     csv_file = joinpath(experiment_dir, "opt_times_$(iteration_counter).csv")
-    CSV.write(csv_file, opt_times)
+    csv_file = joinpath(experiment_dir, "opt_times_discr_$(iteration_counter).csv")
+    CSV.write(csv_file, opt_times_discr)
+    csv_file = joinpath(experiment_dir, "opt_times_fuzzy_$(iteration_counter).csv")
+    CSV.write(csv_file, opt_times_fuzzy)
     return acc
 end
 ho = @hyperopt for i = iter,
