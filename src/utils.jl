@@ -68,7 +68,7 @@ function losseSPA(X, eps_E, eps_CL, gamma, W, S, lambda, Pi, D, T, M)
     for m in 1:M
         for t in 1:T
             tmp2 = sum(lambda[m, :] .* gamma[:, t])
-            if tmp2 != 0.0
+            if tmp2 > 0.0
                 loss3 += Pi[m, t] * log(tmp2) #TODO: Fixed the -Inf problem by if-clause, but it this right?
             else                              # -Inf Problem: the Prob for a data sample to be labeled m is 0
                 loss3 += -100
