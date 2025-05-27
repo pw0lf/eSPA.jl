@@ -20,7 +20,8 @@ include("eSPAfuzzy.jl")
 include("eSPAplus.jl")
 include("GOAL.jl")
 include("eSPAhybrid.jl")
+include("eSPAhybrid_test.jl")
 
-export eSPAfuzzy, eSPAdiscrete, eSPAplus, GOAL, eSPAhybrid , fit!, predict
+export eSPAfuzzy, eSPAdiscrete, eSPAplus, GOAL, eSPAhybrid , eSPAhybrid_test, fit!, predict
 
 end # module eSPA
