@@ -174,7 +174,7 @@ function sstep_fuzzy!(D, W, T, S, gamma, X)
         #Wd = Diagonal(fill(W[d], T))
         A = sqrt(W[d]) .* gamma'   # T x K
         b = sqrt(W[d]) .* X[d, :]
-        S[d, :] = (A \ b)'  
+        S[d, :] = (pinv(A) * b)'  
         #S[d, :] = (gamma * Wd * gamma') \ (gamma * Wd * X[d, :])
     end
 end
