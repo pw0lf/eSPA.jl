@@ -71,7 +71,7 @@ function train_and_eval_model(K,eps_CL,G,tol)
     return acc
 end
 ho = @hyperopt for i = iter,
-            K = 5:(minimum([100,Int(0.8*174)])),
+            K = 5:100,
             G = 1:(d-1),
             eps_CL = exp10.(LinRange(-1,2,1000)),
             tol = exp10.(-LinRange(1,10,1000))
