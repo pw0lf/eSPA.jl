@@ -12,4 +12,4 @@
 module load lang/Julia
 
 #========[ + + + + Job Steps + + + + ]========#
-srun julia --project=../. exp1_darwin_plus.jl -i 50
+srun julia --project=../. exp_darwin_plus.jl -i 50
