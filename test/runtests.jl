@@ -76,7 +76,7 @@ end
     T = 10
     M = 3
     eps_E = 2.0
-    eps_CL = 2.0
+    eps_CL = 3.0
 
     X = Matrix(1.0I, D, D)
     S = X[:, 1:5]
