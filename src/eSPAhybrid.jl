@@ -67,7 +67,6 @@ Train eSPAhybrid with Data.
 - `y::AbstractVector`: Data labels. The labels should be Integers between 1 and M.
 """
 function fit!(model::eSPAhybrid, X::AbstractMatrix, y::AbstractVector)
-    start_time = time_ns()
     model.D, model.T = size(X)
     T_y = size(y)[1]
 
@@ -95,75 +94,38 @@ function fit!(model::eSPAhybrid, X::AbstractMatrix, y::AbstractVector)
     L = Inf
     L_delta = Inf
 
-    opt_times_discr = DataFrame(i = Int[], no_empty_cluster = Int[], sstep = Int[],
-                                lambdastep = Int[], gammastep = Int[], wstep = Int[],
-                                loss = Int[])
-    start_optimization = time_ns()
     println("Starting discrete phase")
     while L_delta > model.tol && i <= model.max_iter
-        time_1 = time_ns()
         gammastep_discrete!(X, model.K, model.eps_CL, model.tol, model.gamma, model.W,
                             model.S, model.lambda, model.Pi, model.T, model.M)
-        time_2 = time_ns()
         no_empty_cluster!(model.K, model.gamma, model.T)
-        time_3 = time_ns()
         wstep_discrete!(X, model.eps_E, model.gamma, model.W, model.S, model.D, model.T)
-        time_4 = time_ns()
         sstep_discrete!(X, model.K, model.gamma, model.S, model.D)
-        time_5 = time_ns()
         lambdastep_discrete!(model.K, model.gamma, model.lambda, model.Pi, model.M)
-        time_6 = time_ns()
 
         L1, L2,
         L3 = losseSPA(X, model.eps_E, model.eps_CL, model.gamma, model.W, model.S,
                       model.lambda, model.Pi, model.D, model.T, model.M)
-        time_7 = time_ns()
         L_new = L1 + L2 - L3
         L_delta = abs(L - L_new)
         L = L_new
         println(i, ", Loss: ", L_new, " | $L1, $L2, $(-L3)")
-        #println("delta: $L_delta")
-        #println("W: $(model.W)")
-        timing_results = (; i = i, no_empty_cluster = time_3 - time_2,
-                          sstep = time_5-time_4, lambdastep = time_6-time_5,
-                          gammastep = time_2-time_1, wstep = time_4-time_3,
-                          loss = time_7-time_6)
-        push!(opt_times_discr, timing_results)
         i += 1
     end
-    opt_times_fuzzy = DataFrame(i = Int[], sstep = Int[], lambdastep = Int[],
-                                gammastep = Int[], wstep = Int[], loss = Int[])
-    start_fuzzy = time_ns()
     println("Starting fuzzy phase")
     for fuzzy_step in 1:model.num_fuzzy_steps
-        #TODO: Change
-        #no_empty_cluster!(model.K,model.gamma,model.T) #TODO: Check if this is needed
-        time_1 = time_ns()
         sstep_fuzzy!(model.D, model.W, model.T, model.S, model.gamma, X)
-        time_2 = time_ns()
         lambdastep_fuzzy!(model.K, model.gamma, model.lambda, model.Pi, model.M, model.T)
-        time_3 = time_ns()
         gammastep_fuzzy!(model.T, model.M, model.Pi, model.lambda, model.eps_CL, model.W, X,
                          model.S, model.K, model.gamma)
-        time_4 = time_ns()
         wstep_fuzzy!(X, model.eps_E, model.gamma, model.W, model.S, model.D, model.T)
-        time_5 = time_ns()
         L1, L2,
         L3 = losseSPA(X, model.eps_E, model.eps_CL, model.gamma, model.W, model.S,
                       model.lambda, model.Pi, model.D, model.T, model.M)
-        time_6 = time_ns()
         L_new = L1 + L2 - L3
         L_delta = abs(L - L_new)
         L = L_new
-        println(fuzzy_step, ", Loss: ", L_new, " | $L1, $L2, $(-L3)")
-        timing_results = (; i = fuzzy_step, sstep = time_2-time_1,
-                          lambdastep = time_3-time_2, gammastep = time_4-time_3,
-                          wstep = time_5-time_4, loss = time_6-time_5)
-        push!(opt_times_fuzzy, timing_results)
     end
-    end_time = time_ns()
-    return start_time, start_optimization, start_fuzzy, end_time, opt_times_discr,
-           opt_times_fuzzy
 end
 
 """

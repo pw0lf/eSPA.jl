@@ -62,7 +62,6 @@ Train GOAL with Data.
 - `y::AbstractVector`: Data labels. The labels should be Integers between 1 and M.
 """
 function fit!(model::GOAL, X::AbstractMatrix, y::AbstractVector)
-    start_time = time_ns()
     model.D, model.T = size(X)
     T_y = size(y)[1]
 
@@ -90,41 +89,23 @@ function fit!(model::GOAL, X::AbstractMatrix, y::AbstractVector)
     L = Inf
     L_delta = Inf
 
-    opt_times = DataFrame(i = Int[], no_empty_cluster = Int[], sstep = Int[],
-                          lambdastep = Int[], gammastep = Int[], rstep = Int[],
-                          loss = Int[])
-    start_optimization = time_ns()
     while L_delta > model.tol && i <= model.max_iter
-        time_1 = time_ns()
         sstep_goal!(X, model.K, model.gamma, model.S, model.R, model.D)
-        time_2 = time_ns()
         gammastep_goal!(X, model.K, model.eps_CL, model.tol, model.gamma, model.S, model.R,
                         model.Pi, model.lambda, model.T, model.M)
-        time_3 = time_ns()
         no_empty_cluster!(model.K, model.gamma, model.T)
-        time_4 = time_ns()
         lambdastep_discrete!(model.K, model.gamma, model.lambda, model.Pi, model.M)
-        time_5 = time_ns()
         rstep_goal!(X, model.G, model.gamma, model.S, model.R, model.D)
-        time_6 = time_ns()
 
         L1,
         L2 = lossGOAL(X, model.eps_CL, model.gamma, model.R, model.S, model.lambda,
                       model.Pi, model.D, model.T, model.M)
-        time_7 = time_ns()
         L_new = L1 - L2
         L_delta = abs(L - L_new)
         L = L_new
         println(i, ", Loss: ", L_new, " | $L1, $(-L2)")
-        timing_results = (; i = i, no_empty_cluster = time_4 - time_3,
-                          sstep = time_2-time_1, lambdastep = time_5-time_4,
-                          gammastep = time_3-time_2, rstep = time_6-time_5,
-                          loss = time_7-time_6)
-        push!(opt_times, timing_results)
         i += 1
     end
-    end_time = time_ns()
-    return start_time, start_optimization, end_time, opt_times
 end
 
 """

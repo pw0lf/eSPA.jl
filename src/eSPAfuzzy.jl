@@ -66,7 +66,6 @@ Train eSPAfuzzy with Data.
 - `y::AbstractVector`: Data labels. The labels should be Integers between 1 and M.
 """
 function fit!(model::eSPAfuzzy, X::AbstractMatrix, y::AbstractVector)
-    start_time = time_ns()
     model.D, model.T = size(X)
     T_y = size(y)[1]
 
@@ -95,38 +94,21 @@ function fit!(model::eSPAfuzzy, X::AbstractMatrix, y::AbstractVector)
     L = Inf
     L_delta = Inf
 
-    opt_times = DataFrame(i = Int[], sstep = Int[], lambdastep = Int[], gammastep = Int[],
-                          wstep = Int[], loss = Int[])
-    start_optimization = time_ns()
     while L_delta > model.tol && i <= model.max_iter
-        #TODO: Change
-        #no_empty_cluster!(model.K,model.gamma,model.T) #TODO: Check if this is needed
-        time_1 = time_ns()
         sstep_fuzzy!(model.D, model.W, model.T, model.S, model.gamma, X)
-        time_2 = time_ns()
         lambdastep_fuzzy!(model.K, model.gamma, model.lambda, model.Pi, model.M, model.T)
-        time_3 = time_ns()
         gammastep_fuzzy!(model.T, model.M, model.Pi, model.lambda, model.eps_CL, model.W, X,
                          model.S, model.K, model.gamma)
-        time_4 = time_ns()
         wstep_fuzzy!(X, model.eps_E, model.gamma, model.W, model.S, model.D, model.T)
-        time_5 = time_ns()
         L1, L2,
         L3 = losseSPA(X, model.eps_E, model.eps_CL, model.gamma, model.W, model.S,
                       model.lambda, model.Pi, model.D, model.T, model.M)
-        time_6 = time_ns()
         L_new = L1 + L2 - L3
         L_delta = abs(L - L_new)
         L = L_new
         println(i, ", Loss: ", L_new, " | $L1, $L2, $(-L3)")
-        timing_results = (; i = i, sstep = time_2-time_1, lambdastep = time_3-time_2,
-                          gammastep = time_4-time_3, wstep = time_5-time_4,
-                          loss = time_6-time_5)
-        push!(opt_times, timing_results)
         i += 1
     end
-    end_time = time_ns()
-    return start_time, start_optimization, end_time, opt_times
 end
 
 """

@@ -49,9 +49,8 @@ end
 ######## loss functions ########
 
 function losseSPA(X, eps_E, eps_CL, gamma, W, S, lambda, Pi, D, T, M)
-    W[W .<= 0] .= eps(eltype(W)) # Bugfix. Sometimes a dimension gets assigned weight of 0.0
+    W[W .<= 0] .= eps(eltype(W))
     loss1 = eps_E/D * sum(W[:] .* log.(W[:]))
-    #println("loss1 ",loss1)
 
     loss2 = 0
     S_mul_gamma = S*gamma
@@ -63,21 +62,19 @@ function losseSPA(X, eps_E, eps_CL, gamma, W, S, lambda, Pi, D, T, M)
         loss2 += W[d] * tmp
     end
     loss2 = loss2/T
-    #println("loss2 ",loss2)
 
     loss3 = 0
     for m in 1:M
         for t in 1:T
             tmp2 = sum(lambda[m, :] .* gamma[:, t])
             if tmp2 > 0.0
-                loss3 += Pi[m, t] * log(tmp2) #TODO: Fixed the -Inf problem by if-clause, but it this right?
-            else                              # -Inf Problem: the Prob for a data sample to be labeled m is 0
+                loss3 += Pi[m, t] * log(tmp2)
+            else
                 loss3 += -100
             end
         end
     end
     loss3 = eps_CL/(T*M) * loss3
-    #println("loss3: ",loss3)
 
     return loss1, loss2, loss3
 end
@@ -94,9 +91,11 @@ function lossGOAL(X, eps_CL, gamma, R, S, lambda, Pi, D, T, M)
     for m in 1:M
         for t in 1:T
             tmp2 = sum(lambda[m, :] .* gamma[:, t])
-            if tmp2 != 0.0
-                loss2 += Pi[m, t] * log(tmp2) #TODO: Fixed the -Inf problem by if-clause, but it this right?
-            end                              # -Inf Problem: the Prob for a data sample to be labeled m is 0
+            if tmp2 > 0.0
+                loss3 += Pi[m, t] * log(tmp2)
+            else
+                loss3 += -100
+            end
         end
     end
     loss2 = eps_CL/(T*M) * loss2
@@ -105,7 +104,6 @@ function lossGOAL(X, eps_CL, gamma, R, S, lambda, Pi, D, T, M)
 end
 
 ######## fuzzy steps ########
-#TODO: Alles steps bis auf W-step
 
 function wstep_fuzzy!(X, eps_E, gamma, W, S, D, T)
     model = Model(Ipopt.Optimizer)
@@ -164,19 +162,15 @@ function gammastep_fuzzy!(T, M, Pi, lambda, eps_CL, W, X, S, K, gamma)
         @objective(model, Min, obj_function(gt))
         @constraint(model, sum(gt) == 1)
         optimize!(model)
-        #optimize!(model; quiet=true)
         gamma[:, t] = value.(gt)
     end
 end
 
-#TODO: test since it's written with chatgpt
 function sstep_fuzzy!(D, W, T, S, gamma, X)
     for d in 1:D
-        #Wd = Diagonal(fill(W[d], T))
         A = sqrt(W[d]) .* gamma'   # T x K
         b = sqrt(W[d]) .* X[d, :]
         S[d, :] = (pinv(A) * b)'
-        #S[d, :] = (gamma * Wd * gamma') \ (gamma * Wd * X[d, :])
     end
 end
 
