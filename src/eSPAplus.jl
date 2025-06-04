@@ -31,7 +31,7 @@ mutable struct eSPAplus
     M::Int
 end
 
-function eSPAplus(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64,max_iter::Int)
+function eSPAplus(K::Int, eps_CL::Float64, eps_E::Float64, tol::Float64, max_iter::Int)
     if eps_CL < 0.0
         throw(ArgumentError("eps_CL must be non-negative"))
     end
@@ -86,13 +86,15 @@ function fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
     model.S = zeros(model.D, model.K)
     model.lambda = zeros(model.M, model.K)
 
-    initialize_plus!(X,model.K, model.W, model.S, model.lambda, model.D, model.T, model.M)
+    initialize_plus!(X, model.K, model.W, model.S, model.lambda, model.D, model.T, model.M)
 
     i = 1
     L = Inf
     L_delta = Inf
 
-    opt_times = DataFrame(i=Int[],no_empty_cluster=Int[],sstep=Int[],lambdastep=Int[],gammastep=Int[],wstep=Int[],loss=Int[])
+    opt_times = DataFrame(i = Int[], no_empty_cluster = Int[], sstep = Int[],
+                          lambdastep = Int[], gammastep = Int[], wstep = Int[],
+                          loss = Int[])
     start_optimization = time_ns()
     while (L_delta > model.tol) && (i <= model.max_iter)
         time_1 = time_ns()
@@ -119,8 +121,11 @@ function fit!(model::eSPAplus, X::AbstractMatrix, y::AbstractVector)
         #println("delta: $L_delta")
         #println("W: $(model.W)")
 
-        timing_results = (;i = i,no_empty_cluster=time_3 - time_2,sstep=time_5-time_4,lambdastep=time_6-time_5,gammastep=time_2-time_1,wstep=time_4-time_3,loss=time_7-time_6)
-        push!(opt_times,timing_results)
+        timing_results = (; i = i, no_empty_cluster = time_3 - time_2,
+                          sstep = time_5-time_4, lambdastep = time_6-time_5,
+                          gammastep = time_2-time_1, wstep = time_4-time_3,
+                          loss = time_7-time_6)
+        push!(opt_times, timing_results)
         i += 1
     end
     end_time=time_ns()

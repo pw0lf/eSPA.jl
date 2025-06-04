@@ -20,7 +20,7 @@ function initialize_plus!(X, K, W, S, lambda, D, T, M)
 
     S[:, :] = X[:, rand(1:T, K)]
 
-    lambda[:, :] = rand(M,K)
+    lambda[:, :] = rand(M, K)
     for m in 1:M
         lambda[:, m] = normalize!(lambda[:, m], 1)
     end
@@ -175,7 +175,7 @@ function sstep_fuzzy!(D, W, T, S, gamma, X)
         #Wd = Diagonal(fill(W[d], T))
         A = sqrt(W[d]) .* gamma'   # T x K
         b = sqrt(W[d]) .* X[d, :]
-        S[d, :] = (pinv(A) * b)'  
+        S[d, :] = (pinv(A) * b)'
         #S[d, :] = (gamma * Wd * gamma') \ (gamma * Wd * X[d, :])
     end
 end

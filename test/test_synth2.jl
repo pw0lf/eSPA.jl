@@ -9,7 +9,7 @@ Random.seed!(50)
 
 include("synthdata2.jl")
 
-d= 4
+d = 4
 n = 13 * d + 2
 n = 100
 
@@ -21,8 +21,7 @@ X_test = X[:, test_indices]
 y_train = Y[train_indices]
 y_test = Y[test_indices]
 
-
-model = eSPAhybrid(21, 0.01, 0.1, 0.0001, 100 ,3)
+model = eSPAhybrid(21, 0.01, 0.1, 0.0001, 100, 3)
 start_time, start_optimization, end_time, opt_times = eSPA.fit!(model, X_train, y_train)
 y_pred = eSPA.predict(model, X_test)
 println("Acc: ", accuracy(y_pred, y_test))

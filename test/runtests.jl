@@ -31,7 +31,7 @@ include("../src/utils.jl")
     @testset "init plus" begin
         W = zeros(D)
         S = zeros(D, K)
-        lambda = zeros(M,K)
+        lambda = zeros(M, K)
         initialize_plus!(X, K, W, S, lambda, D, T, M)
 
         # Test if W is positiv and sums up to 1
@@ -109,7 +109,7 @@ end
 
 @testset "fuzzy steps" begin end
 
-@testset "GOAL steps" begin 
+@testset "GOAL steps" begin
     @testset "sstep" begin
         D = 5
         T = 10
@@ -131,15 +131,15 @@ end
         D = 2
         K = 2
         M = 2
-        X = [-0.5 -1.5 -1. -1. 0.5 1.5 1. 1.; 0 0 0.5 -0.5 0 0 0.5 -0.5]
+        X = [-0.5 -1.5 -1.0 -1.0 0.5 1.5 1.0 1.0; 0 0 0.5 -0.5 0 0 0.5 -0.5]
         S = [-1 1; 0 0]
         Pi = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
         lambda = [1 0; 0 1]
         G = 2
         R = Matrix(1.0I, G, G)
-        eps_CL = 1.
+        eps_CL = 1.0
         tol = 0.001
-        gamma = zeros(K,T)
+        gamma = zeros(K, T)
         gammastep_goal!(X, K, eps_CL, tol, gamma, S, R, Pi, lambda, T, M)
         gamma_true = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
         @test gamma == gamma_true
@@ -152,16 +152,14 @@ end
         X = [1 1 1 0 0 0; 0 0 0 -1 -1 -1; 0 0 0 0 0 0]
         gamma = [1 1 1 0 0 0; 0 0 0 1 1 1]
         S = [1 -1; 1 0]
-        R = zeros(D,G)
+        R = zeros(D, G)
 
         rstep_goal!(X, G, gamma, S, R, D)
 
         R_true = [1 0; 0 -1; 0 0]
         for d in 1:D, g in 1:G
-
-            @test R[d,g] .≈ R_true[d,g] atol = 0.01
+            @test R[d, g] .≈ R_true[d, g] atol = 0.01
         end
-
     end
 end
 
@@ -191,19 +189,19 @@ end
         @test lambda ≈ Matrix(1.0I, 3, 3) atol=0.01
     end
 
-    @testset "gammastep" begin 
+    @testset "gammastep" begin
         T = 8
         D = 2
         K = 2
         M = 2
-        X = [-0.5 -1.5 -1. -1. 0.5 1.5 1. 1.; 0 0 0.5 -0.5 0 0 0.5 -0.5]
+        X = [-0.5 -1.5 -1.0 -1.0 0.5 1.5 1.0 1.0; 0 0 0.5 -0.5 0 0 0.5 -0.5]
         S = [-1 1; 0 0]
         Pi = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
         lambda = [1 0; 0 1]
         W = [0.5, 0.5]
-        eps_CL = 1.
+        eps_CL = 1.0
         tol = 0.001
-        gamma = zeros(K,T)
+        gamma = zeros(K, T)
         gammastep_discrete!(X, K, eps_CL, tol, gamma, W, S, lambda, Pi, T, M)
         gamma_true = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
         @test gamma == gamma_true
@@ -231,31 +229,31 @@ end
     K = 3
     T = 10
     gamma = [1 1 1 0 0 0 0 0 0 0; 0 0 0 1 1 1 1 0 0 0; 0 0 0 0 0 0 0 1 1 1]
-    @test check_clustersizes(K, gamma, T) == [3,4,3]
+    @test check_clustersizes(K, gamma, T) == [3, 4, 3]
 
     no_empty_cluster!(K, gamma, T)
-    @test check_clustersizes(K, gamma, T) == [3,4,3]
+    @test check_clustersizes(K, gamma, T) == [3, 4, 3]
 
     gamma = [1 1 1 1 1 1 1 0 0 0; 0 0 0 0 0 0 0 1 1 1; 0 0 0 0 0 0 0 0 0 0]
     split_cluster!(gamma, 3, 1)
-    @test check_clustersizes(K, gamma, T) == [4,3,3]
+    @test check_clustersizes(K, gamma, T) == [4, 3, 3]
 
     gamma = [1 1 1 1 1 1 1 0 0 0; 0 0 0 0 0 0 0 1 1 1; 0 0 0 0 0 0 0 0 0 0]
     no_empty_cluster!(K, gamma, T)
-    @test check_clustersizes(K, gamma, T) == [4,3,3]
+    @test check_clustersizes(K, gamma, T) == [4, 3, 3]
 end
 
-@testset "predictions" begin 
+@testset "predictions" begin
     @testset "discrete" begin
         T = 8
         D = 2
         K = 2
         M = 2
-        X = [-0.5 -1.5 -1. -1. 0.5 1.5 1. 1.; 0 0 0.5 -0.5 0 0 0.5 -0.5]
+        X = [-0.5 -1.5 -1.0 -1.0 0.5 1.5 1.0 1.0; 0 0 0.5 -0.5 0 0 0.5 -0.5]
         S = [-1 1; 0 0]
         lambda = [1 0; 0 1]
         W = [0.5, 0.5]
-        gamma = zeros(K,T)
+        gamma = zeros(K, T)
 
         prediction_gamma_discrete!(gamma, X, W, S, K, T)
 
@@ -268,19 +266,17 @@ end
         D = 2
         K = 2
         M = 2
-        X = [-0.5 -1.5 -1. -1. 0.5 1.5 1. 1.; 0 0 0.5 -0.5 0 0 0.5 -0.5]
+        X = [-0.5 -1.5 -1.0 -1.0 0.5 1.5 1.0 1.0; 0 0 0.5 -0.5 0 0 0.5 -0.5]
         S = [-1 1; 0 0]
         Pi = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
         lambda = [1 0; 0 1]
         G = 2
         R = Matrix(1.0I, G, G)
-        gamma = zeros(K,T)
+        gamma = zeros(K, T)
         prediction_gamma_GOAL!(gamma, X, R, S, K, T)
         gamma_true = [1 1 1 1 0 0 0 0; 0 0 0 0 1 1 1 1]
         @test gamma == gamma_true
     end
 
-    @testset "fuzzy" begin
-        
-    end
+    @testset "fuzzy" begin end
 end

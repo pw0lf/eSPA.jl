@@ -95,7 +95,8 @@ function fit!(model::eSPAfuzzy, X::AbstractMatrix, y::AbstractVector)
     L = Inf
     L_delta = Inf
 
-    opt_times = DataFrame(i=Int[],sstep=Int[],lambdastep=Int[],gammastep=Int[],wstep=Int[],loss=Int[])
+    opt_times = DataFrame(i = Int[], sstep = Int[], lambdastep = Int[], gammastep = Int[],
+                          wstep = Int[], loss = Int[])
     start_optimization = time_ns()
     while L_delta > model.tol && i <= model.max_iter
         #TODO: Change
@@ -118,8 +119,10 @@ function fit!(model::eSPAfuzzy, X::AbstractMatrix, y::AbstractVector)
         L_delta = abs(L - L_new)
         L = L_new
         println(i, ", Loss: ", L_new, " | $L1, $L2, $(-L3)")
-        timing_results = (;i = i,sstep=time_2-time_1,lambdastep=time_3-time_2,gammastep=time_4-time_3,wstep=time_5-time_4,loss=time_6-time_5)
-        push!(opt_times,timing_results)
+        timing_results = (; i = i, sstep = time_2-time_1, lambdastep = time_3-time_2,
+                          gammastep = time_4-time_3, wstep = time_5-time_4,
+                          loss = time_6-time_5)
+        push!(opt_times, timing_results)
         i += 1
     end
     end_time = time_ns()
