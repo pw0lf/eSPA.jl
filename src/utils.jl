@@ -169,7 +169,6 @@ function gammastep_fuzzy!(T, M, Pi, lambda, eps_CL, W, X, S, K, gamma)
     end
 end
 
-#TODO: test since it's written with chatgpt
 function sstep_fuzzy!(D, W, T, S, gamma, X)
     for d in 1:D
         #Wd = Diagonal(fill(W[d], T))
