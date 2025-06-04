@@ -5,7 +5,9 @@ Additionally eSPAhybrid is implemented, a models proposed in my thesis.
 The thesis can be found here.
 
 eSPA: https://arxiv.org/abs/2002.03176
+
 eSPA+: https://direct.mit.edu/neco/article-abstract/34/5/1220/110047/eSPA-Scalable-Entropy-Optimal-Machine-Learning?redirectedFrom=fulltext
+
 GOAL: https://direct.mit.edu/neco/article-abstract/36/6/1198/120667/Gauge-Optimal-Approximate-Learning-for-Small-Data?redirectedFrom=fulltext
 
 
