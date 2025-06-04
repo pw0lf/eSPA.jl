@@ -68,9 +68,9 @@ function losseSPA(X, eps_E, eps_CL, gamma, W, S, lambda, Pi, D, T, M)
         for t in 1:T
             tmp2 = sum(lambda[m, :] .* gamma[:, t])
             if tmp2 > 0.0
-                loss3 += Pi[m, t] * log(tmp2)
+                loss2 += Pi[m, t] * log(tmp2)
             else
-                loss3 += -100
+                loss2 += -100
             end
         end
     end

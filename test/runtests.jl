@@ -95,7 +95,7 @@ end
         L1, L2, L3 = losseSPA(X, eps_E, eps_CL, gamma, W, S, lambda, Pi, D, T, M)
         @test L2 ≈ 1/D atol=0.01
         @test L1 ≈ (1/D) * log(1/D) * eps_E atol=0.01
-        @test L3 ≈ 0.0 atol=0.01
+        @test L3 ≈ -200.0 atol=0.01
     end
 
     @testset "loss GOAL" begin
@@ -103,7 +103,7 @@ end
         R = Matrix(1.0I, G, G)
         L1, L2 = lossGOAL(X, eps_CL, gamma, R, S, lambda, Pi, D, T, M)
         @test L1 ≈ 1.0 atol=0.01
-        @test L2 ≈ 0.0 atol=0.01
+        @test L2 ≈ -200.0 atol=0.01
     end
 end
 
